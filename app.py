@@ -5,7 +5,7 @@ import sqlite3
 from random import randint
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key' # Required for session management
+app.secret_key = 'your_secret_key'  # Required for session management
 
 DATABASE = 'highscores.db'
 
@@ -86,24 +86,24 @@ def hilo():
     errors = session['hilo_errors']
     if errors == 0:
         final_points = session['hilo_points']
-        session['hilo_points'] = 100 # reset game points
-        session['hilo_errors'] = 3 # reset errors
+        session['hilo_points'] = 100  # reset game points
+        session['hilo_errors'] = 3  # reset errors
         top_scores = get_high_scores()
         return render_template('hilo_gameover.html',
-                               points = final_points,
-                               top_scores = top_scores)
+                               points=final_points,
+                               top_scores=top_scores)
 
     while True:
-        number_first = randint(1,10)
-        number_second = randint(1,10)
+        number_first = randint(1, 10)
+        number_second = randint(1, 10)
         if number_first != number_second:
             break
 
     return render_template('hilo.html',
                            points=points,
-                           errors = errors,
-                           number_first = number_first,
-                           number_second = number_second)
+                           errors=errors,
+                           number_first=number_first,
+                           number_second=number_second)
 
 
 @app.route('/hilo_guess', methods=['POST'])
@@ -126,14 +126,9 @@ def hilo_guess():
         session['hilo_errors'] -= 1
 
     return render_template('hilo_result.html',
-                           number_first = number_first,
-                           number_second = number_second,
-                           result = result)
-
-
-# @app.route('/guppies')
-# def guppies():
-#     return render_template('guppies.html')
+                           number_first=number_first,
+                           number_second=number_second,
+                           result=result)
 
 
 @app.route('/guppies')
@@ -156,11 +151,9 @@ def guppies_guess():
     bet_amount = int(request.form.get('guppies_bet_amount'))
     guess = request.form.get('guppies_guess')
 
-
     second_number = random.randint(1, 100)
     correct = ((guess == 'higher' and second_number > session['guppies_first_number']) or
                (guess == 'lower' and second_number < session['guppies_first_number']))
-
 
     if correct:
         session['guppies_money'] += bet_amount
@@ -170,7 +163,6 @@ def guppies_guess():
         result = "WRONG!"
         if session['guppies_money'] == 0:
             result = "Game Over"
-
 
     # Update for next round
     session['guppies_first_number'] = random.randint(1, 100)
