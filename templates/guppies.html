@@ -1,7 +1,18 @@
-<% extend "layout.html" %>
+{% extends "layout.html" %}
 
 {% block title %}Guppies{% endblock %}
 
 {% block content %}
-    Guppies!
+
+<h1>Guppies!</h1>
+    <h2>{{ result }}</h2>
+<p>You currently have ${{ guppies_money }}.</p>
+<p>The first number is: {{ guppies_first_number }}</p>
+<form action="/guppies_guess" method="post">
+<input type="number" name="guppies_bet_amount" placeholder="Bet Amount" max="{{ guppies_money }}" required>
+<button type="submit" name="guppies_guess" value="higher">Higher</button>
+<button type="submit" name="guppies_guess" value="lower">Lower</button>
+<button type="submit" name="end_game" value="end_game" formnovalidate>End Game</button>
+</form>
+
 {% endblock %}

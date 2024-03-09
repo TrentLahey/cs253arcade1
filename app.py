@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 import sqlite3
 from random import randint
@@ -7,10 +9,12 @@ app.secret_key = 'your_secret_key' # Required for session management
 
 DATABASE = 'highscores.db'
 
+
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
 
 def init_db():
     db = get_db_connection()
@@ -24,9 +28,11 @@ def init_db():
     db.commit()
     db.close()
 
+
 # Manually pushing the application context
 with app.app_context():
     init_db()
+
 
 def add_score(name, score):
     conn = get_db_connection()
@@ -34,17 +40,20 @@ def add_score(name, score):
     conn.commit()
     conn.close()
 
+
 def get_high_scores(limit=10):
     conn = get_db_connection()
     scores = conn.execute('SELECT name, score FROM high_scores ORDER BY score DESC LIMIT ?', (limit,)).fetchall()
     conn.close()
     return scores
 
+
 @app.route('/add_score', methods=['POST'])
 def add_score_route():
     score_data = request.json
     add_score(score_data['name'], score_data['score'])
     return jsonify({'message': 'Score added successfully!'}), 201
+
 
 @app.route('/high_scores', methods=['GET'])
 def get_high_scores_route():
@@ -56,9 +65,11 @@ def get_high_scores_route():
 def index():
     return render_template('index.html')
 
+
 @app.route('/snake')
 def snake():
     return render_template('snake.html')
+
 
 @app.route('/hilo')
 def hilo():
@@ -118,6 +129,54 @@ def hilo_guess():
                            number_first = number_first,
                            number_second = number_second,
                            result = result)
+
+
+# @app.route('/guppies')
+# def guppies():
+#     return render_template('guppies.html')
+
+
+@app.route('/guppies')
+def guppies_home():
+    # Initialize Guppies game state if not already done
+    session['guppies_money'] = 100
+    session['guppies_first_number'] = random.randint(1, 100)
+    result = "Welcome to Guppies"
+
+    return render_template('guppies.html', guppies_money=session['guppies_money'],
+                           guppies_first_number=session['guppies_first_number'], result=result)
+
+
+@app.route('/guppies_guess', methods=['POST'])
+def guppies_guess():
+    if request.form.get('end_game') == 'end_game':
+        return redirect(url_for('guppies_home'))
+
+    result = ""
+    bet_amount = int(request.form.get('guppies_bet_amount'))
+    guess = request.form.get('guppies_guess')
+
+
+    second_number = random.randint(1, 100)
+    correct = ((guess == 'higher' and second_number > session['guppies_first_number']) or
+               (guess == 'lower' and second_number < session['guppies_first_number']))
+
+
+    if correct:
+        session['guppies_money'] += bet_amount
+        result = "Correct!"
+    elif not correct:
+        session['guppies_money'] -= bet_amount
+        result = "WRONG!"
+        if session['guppies_money'] == 0:
+            result = "Game Over"
+
+
+    # Update for next round
+    session['guppies_first_number'] = random.randint(1, 100)
+
+    return render_template('guppies.html', guppies_money=session['guppies_money'],
+                           guppies_first_number=session['guppies_first_number'], result=result)
 
 
 if __name__ == '__main__':
